@@ -9,10 +9,11 @@ namespace WiredBrainCoffee.ShopInfoTool
         static void Main(string[] args)
         {
             Console.WriteLine("Wired Brain Coffee - Shop Info Tool!");
-            Console.WriteLine("Write 'help' to list available CoffeeShop commands" +
-                "write 'quit' to exit application now");
 
-            var coffeeShopDataprovider = new CoffeeShopDataProvider();
+            Console.WriteLine("Write 'help' to list available coffee shop commands, " +
+              "write 'quit' to exit application");
+
+            var coffeeShopDataProvider = new CoffeeShopDataProvider();
 
             while (true)
             {
@@ -23,40 +24,14 @@ namespace WiredBrainCoffee.ShopInfoTool
                     break;
                 }
 
-                var coffeeShops = coffeeShopDataprovider.LoadCoffeeeShops();
-                if (string.Equals("help", line, StringComparison.OrdinalIgnoreCase))
-                {
-                    Console.WriteLine("> Available coffee shop commands:");
-                    foreach(var coffeeShop in coffeeShops)
-                    {
-                        Console.WriteLine($"> " + coffeeShop.Location);
-                    }
-                }
-                else
-                {
-                    var foundCoffeeShops = coffeeShops
-                        .Where(x => x.Location.StartsWith(line, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
+                var coffeeShops = coffeeShopDataProvider.LoadCoffeeeShops();
 
-                    if (foundCoffeeShops.Count == 0)
-                    {
-                        Console.WriteLine($"> Command '{line}' not found");
-                    }
-                    else if (foundCoffeeShops.Count == 1)
-                    {
-                        var coffeeShop = foundCoffeeShops.Single();
-                        Console.WriteLine($"> Location: {coffeeShop.Location}");
-                        Console.WriteLine($"> Beans in stock: {coffeeShop.BeansInStockInKg}");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"> Multiple matching shop commands found:");
-                        foreach (var coffeeType in foundCoffeeShops)
-                        {
-                            Console.WriteLine($"> {coffeeType.Location}");
-                        }
-                    }
-                }
+                var commandHandler =
+                  string.Equals("help", line, StringComparison.OrdinalIgnoreCase)
+                  ? new HelpCommandHandler(coffeeShops) as ICommandHandler
+                  : new CoffeeShopCommandHandler(coffeeShops, line);
+
+                commandHandler.HandleCommand();
             }
         }
     }
